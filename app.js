@@ -10,15 +10,36 @@ app.use("/client", express.static(__dirname + "/client"));
 serv.listen(2000);
 console.log("Server started.");
 
+var SOCKET_LIST = {};
+
 var io = require("socket.io")(serv, {});
 io.sockets.on("connection", function (socket) {
   console.log("socket connection");
 
-  socket.on("happy", function (data) {
-    console.log("happy " + data.reason);
-  });
+  socket.id = Math.random();
+  socket.x = 0;
+  socket.y = 0;
+  socket.number = "" + Math.floor(Math.random() * 10);
+  SOCKET_LIST[socket.id] = socket;
 
-  socket.emit("serverMsg", {
-    msg: "hello from server",
+  socket.on("disconnect", () => {
+    delete SOCKET_LIST[socket.id];
   });
 });
+setInterval(() => {
+  var pack = [];
+  for (var i in SOCKET_LIST) {
+    socket = SOCKET_LIST[i];
+    socket.x++;
+    socket.y++;
+    pack.push({
+      x: socket.x,
+      y: socket.y,
+      number: socket.number,
+    });
+  }
+  for (var i in SOCKET_LIST) {
+    var socket = SOCKET_LIST[i];
+    socket.emit("newPosition", pack);
+  }
+}, 1000 / 24);
