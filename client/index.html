@@ -1,1 +1,19 @@
-hello world ssss
+Hello World
+<script src="socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+
+  var random = Math.floor(Math.random() * 100);
+
+  var happy = function () {
+    socket.emit("happy", {
+      reason: "its my birthday" + random,
+    });
+  };
+
+  socket.on("serverMsg", function (data) {
+    console.log(data.msg);
+  });
+</script>
+
+<button onclick="happy()">Happy</button>
